@@ -27,7 +27,11 @@
         "url": "https://github.com/SlimIO/stdin/issues"
     },
     "homepage": "https://github.com/SlimIO/stdin#readme",
-    "dependencies": {},
+    "dependencies": {
+        "fast-levenshtein": "^2.0.6",
+        "flatstr": "^1.0.12",
+        "string-length": "^3.1.0"
+    },
     "devDependencies": {
         "@commitlint/cli": "^8.1.0",
         "@commitlint/config-conventional": "^8.1.0",
