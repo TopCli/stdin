@@ -73,12 +73,15 @@ async function stdin(query = "question", options = {}) {
         let realCompletionStr = "";
 
         // eslint-disable-next-line
-        function clearAutoCompletion() {
+        function clearAutoCompletion(forceClean = false) {
             if (autoCompletionActivated) {
                 process.stdout.clearLine(1);
 
                 autoCompletionActivated = false;
                 autoCompletionStr = "";
+            }
+            else if (forceClean) {
+                process.stdout.clearLine(1);
             }
         }
 
@@ -135,10 +138,9 @@ async function stdin(query = "question", options = {}) {
                 }
             }
             else if (key.name === "backspace") {
-                clearAutoCompletion();
-
                 const rawStrCopy = rawStr;
                 if (currentCursorPosition === rawStr.length) {
+                    clearAutoCompletion();
                     rawStr = rawStr.slice(0, rawStrCopy.length - 1);
                     process.stdout.moveCursor(-rawStrCopy.length, 0);
                     process.stdout.clearLine(1);
@@ -146,15 +148,27 @@ async function stdin(query = "question", options = {}) {
                     currentCursorPosition = rawStr.length;
                 }
                 else {
-                    const nLen = rawStr.length - currentCursorPosition - 1;
-                    const g1 = rawStr.slice(0, rawStrCopy.length - nLen);
-                    process.stdout.moveCursor(-rawStrCopy.length, 0);
-                    process.stdout.clearLine(1);
-                    process.stdout.write(g1);
+                    const nLen = strLength(rawStrCopy) - currentCursorPosition;
+                    process.stdout.moveCursor(-1, 0);
+                    clearAutoCompletion(true);
+                    const restStr = rawStrCopy.slice(currentCursorPosition);
+                    process.stdout.write(restStr);
+                    process.stdout.moveCursor(-nLen, 0);
+
+                    currentCursorPosition--;
+                    rawStr = `${rawStrCopy.slice(0, currentCursorPosition)}${restStr}`;
                 }
             }
             else {
-                rawStr += str;
+                if (currentCursorPosition === rawStr.length) {
+                    rawStr += str;
+                }
+                else {
+                    const restStr = rawStr.slice(currentCursorPosition);
+                    // eslint-disable-next-line
+                    str = `${str}${restStr}`;
+                    rawStr = `${rawStr.slice(0, currentCursorPosition)}${str}`;
+                }
                 currentCursorPosition++;
 
                 autoComplete: if (noRefComplete.length > 0) {
