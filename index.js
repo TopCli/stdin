@@ -6,16 +6,20 @@ const { emitKeypressEvents } = require("readline");
 // Require Third-party Dependencies
 const levenshtein = require("fast-levenshtein");
 const strLength = require("string-length");
+const cloneDeep = require("lodash.clonedeep");
 
 /**
  * @function localMatchOf
- * @param {!Array<string>} arr
+ * @param {!Array<string> | object} ref
  * @param {!string} str
  * @param {number} [cost=2]
  * @returns {string | null}
  */
-function localMatchOf(arr, str, cost = 2) {
-    for (const value of arr) {
+function localMatchOf(ref, str, cost = 2) {
+    const isArray = Array.isArray(ref);
+    const keys = isArray ? ref : Object.keys(arr);
+
+    for (const value of keys) {
         const eqCost = levenshtein.get(str, value.slice(0, str.length));
         if (eqCost <= cost) {
             return value.slice(str.length);
@@ -31,7 +35,7 @@ function localMatchOf(arr, str, cost = 2) {
  * @param {!string} query
  * @param {object} [options]
  * @param {Array<string>} [options.history]
- * @param {Array<string>} [options.autocomplete]
+ * @param {Array<string> | object} [options.autocomplete]
  * @returns {Promise<string>}
  *
  * @throws {TypeError}
@@ -46,9 +50,6 @@ async function stdin(query = "question", options = {}) {
     if (!Array.isArray(history)) {
         throw new TypeError("history must be an Array Object");
     }
-    if (!Array.isArray(autocomplete)) {
-        throw new TypeError("autocomplete must be an Array Object");
-    }
 
     emitKeypressEvents(process.stdin);
     if (!process.stdin.isTTY) {
@@ -61,7 +62,8 @@ async function stdin(query = "question", options = {}) {
 
     // Ensure we dont keep initial ref
     const noRefHistory = history.slice(0);
-    const noRefComplete = autocomplete.slice(0);
+    const noRefComplete = cloneDeep(autocomplete);
+    const completeSize = Array.isArray(noRefComplete) ? noRefComplete.length : Object.keys(noRefComplete).length;
 
     return new Promise((resolve) => {
         let rawStr = "";
@@ -83,6 +85,27 @@ async function stdin(query = "question", options = {}) {
             else if (forceClean) {
                 process.stdout.clearLine(1);
             }
+        }
+
+        // eslint-disable-next-line
+        function searchForCompletion(str) {
+            if (completeSize === 0) {
+                return true;
+            }
+            const localMatch = localMatchOf(noRefComplete, rawStr, 2);
+
+            clearAutoCompletion();
+            if (localMatch !== null) {
+                realCompletionStr = localMatch;
+                autoCompletionStr = `\x1b[90m${localMatch}\x1b[39m`;
+                autoCompletionActivated = true;
+                process.stdout.write(typeof str === "undefined" ? autoCompletionStr : `${str}${autoCompletionStr}`);
+                process.stdout.moveCursor(-strLength(autoCompletionStr), 0);
+
+                return false;
+            }
+
+            return true;
         }
 
         process.stdin.on("keypress", (str, key) => {
@@ -158,6 +181,9 @@ async function stdin(query = "question", options = {}) {
                     currentCursorPosition--;
                     rawStr = `${rawStrCopy.slice(0, currentCursorPosition)}${restStr}`;
                 }
+
+                // TODO: implement completion here
+                // searchForCompletion();
             }
             else {
                 if (currentCursorPosition === rawStr.length) {
@@ -169,22 +195,12 @@ async function stdin(query = "question", options = {}) {
                     str = `${str}${restStr}`;
                     rawStr = `${rawStr.slice(0, currentCursorPosition)}${str}`;
                 }
+
                 currentCursorPosition++;
-
-                if (noRefComplete.length > 0) {
-                    const localMatch = localMatchOf(noRefComplete, rawStr, 2);
-
-                    clearAutoCompletion();
-                    if (localMatch !== null) {
-                        realCompletionStr = localMatch;
-                        autoCompletionStr = `\x1b[90m${localMatch}\x1b[39m`;
-                        autoCompletionActivated = true;
-                        process.stdout.write(`${str}${autoCompletionStr}`);
-                        process.stdout.moveCursor(-strLength(autoCompletionStr), 0);
-                    }
+                const writeToStdout = searchForCompletion(str);
+                if (writeToStdout) {
+                    process.stdout.write(str);
                 }
-
-                process.stdout.write(str);
             }
         });
     });
