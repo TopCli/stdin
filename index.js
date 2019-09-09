@@ -171,20 +171,17 @@ async function stdin(query = "question", options = {}) {
                 }
                 currentCursorPosition++;
 
-                autoComplete: if (noRefComplete.length > 0) {
+                if (noRefComplete.length > 0) {
                     const localMatch = localMatchOf(noRefComplete, rawStr, 2);
 
                     clearAutoCompletion();
-                    if (localMatch === null) {
-                        break autoComplete;
+                    if (localMatch !== null) {
+                        realCompletionStr = localMatch;
+                        autoCompletionStr = `\x1b[90m${localMatch}\x1b[39m`;
+                        autoCompletionActivated = true;
+                        process.stdout.write(`${str}${autoCompletionStr}`);
+                        process.stdout.moveCursor(-strLength(autoCompletionStr), 0);
                     }
-                    realCompletionStr = localMatch;
-                    autoCompletionStr = `\x1b[90m${localMatch}\x1b[39m`;
-                    autoCompletionActivated = true;
-                    process.stdout.write(`${str}${autoCompletionStr}`);
-                    process.stdout.moveCursor(-strLength(autoCompletionStr), 0);
-
-                    return;
                 }
 
                 process.stdout.write(str);
