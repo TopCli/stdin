@@ -4,9 +4,26 @@
 const { emitKeypressEvents } = require("readline");
 
 // Require Third-party Dependencies
-const flatstr = require("flatstr");
 const levenshtein = require("fast-levenshtein");
 const strLength = require("string-length");
+
+/**
+ * @function localMatchOf
+ * @param {!Array<string>} arr
+ * @param {!string} str
+ * @param {number} [cost=2]
+ * @returns {string | null}
+ */
+function localMatchOf(arr, str, cost = 2) {
+    for (const value of arr) {
+        const eqCost = levenshtein.get(str, value.slice(0, str.length));
+        if (eqCost <= cost) {
+            return value.slice(str.length);
+        }
+    }
+
+    return null;
+}
 
 /**
  * @async
@@ -48,11 +65,11 @@ async function stdin(query = "question", options = {}) {
 
     return new Promise((resolve) => {
         let rawStr = "";
+        let currentCursorPosition = 0;
         let currentHistoryIndex = noRefHistory.length;
         let isOriginalStr = true;
         let autoCompletionActivated = false;
-        /** @type {string} */
-        let autoCompletionStr = null;
+        let autoCompletionStr = "";
         let realCompletionStr = "";
 
         // eslint-disable-next-line
@@ -61,7 +78,7 @@ async function stdin(query = "question", options = {}) {
                 process.stdout.clearLine(1);
 
                 autoCompletionActivated = false;
-                autoCompletionStr = null;
+                autoCompletionStr = "";
             }
         }
 
@@ -70,11 +87,24 @@ async function stdin(query = "question", options = {}) {
                 process.stdin.setRawMode(false);
                 process.stdin.pause();
                 process.stdout.write("\n");
-
-                flatstr(rawStr);
                 resolve(rawStr);
             }
+            else if (key.name === "left") {
+                if (currentCursorPosition <= 0) {
+                    return;
+                }
+
+                process.stdout.moveCursor(-1, 0);
+                currentCursorPosition--;
+            }
             else if (key.name === "right") {
+                if (currentCursorPosition < rawStr.length) {
+                    process.stdout.moveCursor(1, 0);
+                    currentCursorPosition++;
+
+                    return;
+                }
+
                 if (!autoCompletionActivated) {
                     return;
                 }
@@ -108,30 +138,34 @@ async function stdin(query = "question", options = {}) {
                 clearAutoCompletion();
 
                 const rawStrCopy = rawStr;
-                rawStr = rawStr.slice(0, rawStrCopy.length - 1);
-                process.stdout.moveCursor(-rawStrCopy.length, 0);
-                process.stdout.clearLine(1);
-                process.stdout.write(rawStr);
+                if (currentCursorPosition === rawStr.length) {
+                    rawStr = rawStr.slice(0, rawStrCopy.length - 1);
+                    process.stdout.moveCursor(-rawStrCopy.length, 0);
+                    process.stdout.clearLine(1);
+                    process.stdout.write(rawStr);
+                    currentCursorPosition = rawStr.length;
+                }
+                else {
+                    const nLen = rawStr.length - currentCursorPosition - 1;
+                    const g1 = rawStr.slice(0, rawStrCopy.length - nLen);
+                    process.stdout.moveCursor(-rawStrCopy.length, 0);
+                    process.stdout.clearLine(1);
+                    process.stdout.write(g1);
+                }
             }
             else {
-                flatstr(str);
                 rawStr += str;
+                currentCursorPosition++;
+
                 autoComplete: if (noRefComplete.length > 0) {
-                    let localMatch = null;
-                    for (const value of noRefComplete) {
-                        const eqCost = levenshtein.get(rawStr, value.slice(0, rawStr.length));
-                        if (eqCost <= 2) {
-                            realCompletionStr = value.slice(rawStr.length);
-                            localMatch = `\x1b[90m${realCompletionStr}\x1b[39m`;
-                            break;
-                        }
-                    }
+                    const localMatch = localMatchOf(noRefComplete, rawStr, 2);
 
                     clearAutoCompletion();
                     if (localMatch === null) {
                         break autoComplete;
                     }
-                    autoCompletionStr = localMatch;
+                    realCompletionStr = localMatch;
+                    autoCompletionStr = `\x1b[90m${localMatch}\x1b[39m`;
                     autoCompletionActivated = true;
                     process.stdout.write(`${str}${autoCompletionStr}`);
                     process.stdout.moveCursor(-strLength(autoCompletionStr), 0);
