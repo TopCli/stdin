@@ -11,13 +11,12 @@ const strLength = require("string-length");
  * @function localMatchOf
  * @param {!Array<string>} arr
  * @param {!string} str
- * @param {number} [cost=2]
  * @returns {string | null}
  */
-function localMatchOf(arr, str, cost = 2) {
+function localMatchOf(arr, str) {
     for (const value of arr) {
-        const eqCost = levenshtein.get(str, value.slice(0, str.length));
-        if (eqCost <= cost) {
+        const currCost = levenshtein.get(str, value.slice(0, str.length));
+        if (currCost === 0) {
             return value.slice(str.length);
         }
     }
@@ -88,7 +87,7 @@ async function stdin(query = "question", options = {}) {
             if (noRefComplete.length === 0) {
                 return true;
             }
-            const localMatch = localMatchOf(noRefComplete, rawStr, 2);
+            const localMatch = localMatchOf(noRefComplete, rawStr);
 
             clearAutoCompletion();
             if (localMatch !== null) {
