@@ -14,9 +14,17 @@
         "url": "git+https://github.com/SlimIO/stdin.git"
     },
     "keywords": [
+        "nodejs",
+        "node",
         "stdin",
         "input",
-        "repl"
+        "repl",
+        "REPL",
+        "interactive",
+        "cli",
+        "command-line",
+        "interfaces",
+        "prompt"
     ],
     "author": "SlimIO",
     "license": "MIT",
@@ -29,7 +37,6 @@
     "homepage": "https://github.com/SlimIO/stdin#readme",
     "dependencies": {
         "fast-levenshtein": "^2.0.6",
-        "lodash.clonedeep": "^4.5.0",
         "string-length": "^3.1.0"
     },
     "devDependencies": {
