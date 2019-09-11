@@ -181,22 +181,24 @@ async function stdin(query = "question", options = {}) {
                     currentCursorPosition--;
                     rawStr = `${rawStrCopy.slice(0, currentCursorPosition)}${restStr}`;
                 }
-
-                // TODO: implement completion here
-                // searchForCompletion();
             }
             else {
                 if (currentCursorPosition === rawStr.length) {
                     rawStr += str;
+                    currentCursorPosition++;
                 }
                 else {
-                    const restStr = rawStr.slice(currentCursorPosition);
-                    // eslint-disable-next-line
-                    str = `${str}${restStr}`;
-                    rawStr = `${rawStr.slice(0, currentCursorPosition)}${str}`;
+                    const rawStrCopy = rawStr;
+                    rawStr = `${rawStr.slice(0, currentCursorPosition)}${str}${rawStr.slice(currentCursorPosition)}`;
+                    const restStr = rawStrCopy.slice(currentCursorPosition);
+
+                    process.stdout.write(`${str}${restStr}`);
+                    currentCursorPosition++;
+                    process.stdout.moveCursor(-restStr.length, 0);
+
+                    return;
                 }
 
-                currentCursorPosition++;
                 const writeToStdout = searchForCompletion(str);
                 if (writeToStdout) {
                     process.stdout.write(str);
