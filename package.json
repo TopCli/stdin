@@ -1,6 +1,6 @@
 {
     "name": "@slimio/stdin",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Node.js light standard input (stdin) crafted for REPL experience",
     "main": "index.js",
     "scripts": {
