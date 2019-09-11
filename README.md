@@ -18,15 +18,41 @@ $ npm i @slimio/stdin
 $ yarn add @slimio/stdin
 ```
 
-
 ## Usage example
-TBC
+```js
+const stdin = require("@slimio/stdin");
+
+async function main() {
+    const result = await stdin("Question title > ", {
+        history: ["command in history 1", "command in history 2"],
+        autocomplete: [
+            "events",
+            "events.get_info"
+        ]
+    });
+    console.log(result);
+}
+main().catch(console.error);
+```
 
 ## API
-TBC
+
+### stdin(query: null | string, options?: Options): Promise< string >
+Query paramaters can be set to `null` to disable the title. Options is described by the following TypeScript interface:
+
+```ts
+interface Options {
+    history?: string[];
+    autocomplete?: string[];
+}
+```
 
 ## Dependencies
-This project have no dependencies.
+
+|Name|Refactoring|Security Risk|Usage|
+|---|---|---|---|
+|[fast-levenshtein](https://github.com/hiddentao/fast-levenshtein#readme)|Major|Low|Implementation of levenshtein algo to found similar strings for auto-completion|
+|[string-length](https://github.com/sindresorhus/string-length#readme)|Major|Low|Get the real string length|
 
 ## License
 MIT
