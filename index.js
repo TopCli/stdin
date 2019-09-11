@@ -59,13 +59,12 @@ async function stdin(query = "question", options = {}) {
     }
 
     // Ensure we dont keep initial ref
-    const noRefHistory = history.slice(0);
     const noRefComplete = autocomplete.slice(0);
 
     return new Promise((resolve) => {
         let rawStr = "";
         let currentCursorPosition = 0;
-        let currentHistoryIndex = noRefHistory.length;
+        let currentHistoryIndex = history.length;
         let isOriginalStr = true;
         let autoCompletionActivated = false;
         let autoCompletionStr = "";
@@ -112,8 +111,18 @@ async function stdin(query = "question", options = {}) {
                 process.stdin.pause();
                 process.stdout.write("\n");
                 process.stdin.removeListener("keypress", listener);
+                const uniqueHistorySet = new Set(history);
 
-                resolve(rawStr);
+                const trimedRawStr = rawStr.trim();
+                const result = trimedRawStr === "" ? null : trimedRawStr;
+
+                if (result !== null) {
+                    uniqueHistorySet.add(rawStr);
+                }
+                history.splice(0, history.length);
+                history.push(...uniqueHistorySet);
+
+                resolve(result);
             }
             else if (key.name === "left") {
                 if (currentCursorPosition <= 0) {
@@ -144,20 +153,29 @@ async function stdin(query = "question", options = {}) {
             else if (key.name === "up" || key.name === "down") {
                 const moveIndexValue = key.name === "up" ? -1 : 1;
                 const nextIndex = currentHistoryIndex + moveIndexValue;
-                if (noRefHistory.length === 0 || nextIndex < 0 || nextIndex >= noRefHistory.length) {
+                const rawStrCopy = rawStr;
+
+                if (history.length === 0) {
+                    if (isOriginalStr && rawStrCopy.trim() !== "") {
+                        history.push(rawStrCopy);
+                        isOriginalStr = false;
+                    }
+
+                    return;
+                }
+                if (nextIndex < 0 || nextIndex >= history.length) {
                     return;
                 }
 
                 clearAutoCompletion();
-                const rawStrCopy = rawStr;
-                rawStr = noRefHistory[nextIndex];
+                rawStr = history[nextIndex];
                 process.stdout.moveCursor(-rawStrCopy.length, 0);
                 process.stdout.clearLine(1);
                 process.stdout.write(rawStr);
 
                 currentHistoryIndex = nextIndex;
-                if (isOriginalStr && rawStr.trim() !== "") {
-                    noRefHistory.push(rawStrCopy);
+                if (isOriginalStr && rawStrCopy.trim() !== "") {
+                    history.push(rawStrCopy);
                     isOriginalStr = false;
                 }
             }
