@@ -29,7 +29,8 @@
     "author": "SlimIO",
     "license": "MIT",
     "files": [
-        "index.js"
+        "index.js",
+        "index.d.ts"
     ],
     "bugs": {
         "url": "https://github.com/SlimIO/stdin/issues"
