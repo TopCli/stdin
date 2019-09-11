@@ -51,9 +51,11 @@ async function stdin(query = "question", options = {}) {
     if (!process.stdin.isTTY) {
         throw new Error("Current stdin must be a TTY");
     }
+
     process.stdin.setRawMode(true);
+    process.stdin.resume();
     if (query !== null) {
-        process.stdout.write(`${query}: `);
+        process.stdout.write(query);
     }
 
     // Ensure we dont keep initial ref
@@ -103,11 +105,14 @@ async function stdin(query = "question", options = {}) {
             return true;
         }
 
-        process.stdin.on("keypress", (str, key) => {
+        // eslint-disable-next-line
+        const listener = (str, key) => {
             if (str === "\u0003" || key.name === "return" || key.name === "escape") {
                 process.stdin.setRawMode(false);
                 process.stdin.pause();
                 process.stdout.write("\n");
+                process.stdin.removeListener("keypress", listener);
+
                 resolve(rawStr);
             }
             else if (key.name === "left") {
@@ -200,7 +205,9 @@ async function stdin(query = "question", options = {}) {
                     process.stdout.write(str);
                 }
             }
-        });
+        };
+
+        process.stdin.on("keypress", listener);
     });
 }
 
