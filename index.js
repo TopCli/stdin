@@ -11,12 +11,20 @@ const strLength = require("string-length");
  * @function localMatchOf
  * @param {!Array<string>} arr
  * @param {!string} str
+ * @param {boolean} [forceNextMatch=false]
  * @returns {string | null}
  */
-function localMatchOf(arr, str) {
+function localMatchOf(arr, str, forceNextMatch = false) {
+    let isFirstMatch = true;
+
     for (const value of arr) {
         const currCost = levenshtein.get(str, value.slice(0, str.length));
         if (currCost === 0) {
+            if (forceNextMatch && isFirstMatch) {
+                isFirstMatch = false;
+                continue;
+            }
+
             return value.slice(str.length);
         }
     }
@@ -83,14 +91,14 @@ async function stdin(query = "question", options = {}) {
         }
 
         // eslint-disable-next-line
-        function searchForCompletion(str) {
+        function searchForCompletion(str, forceNextMatch = false) {
             if (noRefComplete.length === 0) {
                 return true;
             }
-            const localMatch = localMatchOf(noRefComplete, rawStr);
+            const localMatch = localMatchOf(noRefComplete, rawStr, forceNextMatch);
 
             clearAutoCompletion();
-            if (localMatch !== null) {
+            if (localMatch !== null && localMatch !== "") {
                 realCompletionStr = localMatch;
                 autoCompletionStr = `\x1b[90m${localMatch}\x1b[39m`;
                 autoCompletionActivated = true;
@@ -148,6 +156,7 @@ async function stdin(query = "question", options = {}) {
                 rawStr += realCompletionStr;
                 currentCursorPosition += realCompletionStr.length;
                 realCompletionStr = "";
+                searchForCompletion(void 0, true);
             }
             else if (key.name === "up" || key.name === "down") {
                 const moveIndexValue = key.name === "up" ? -1 : 1;
