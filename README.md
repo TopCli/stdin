@@ -5,7 +5,12 @@
 ![dep](https://img.shields.io/david/SlimIO/stdin)
 ![size](https://img.shields.io/github/languages/code-size/SlimIO/stdin)
 
-Node.js light standard input (stdin) crafted for REPL experience
+Node.js light and interactive standard input (stdin) crafted for REPL (like) experience (with auto-completion and history). Under the hood it use `process.stdin` and TTY Stream with the raw mode enabled to catch key by key.
+
+<p align="center">Demo with the SlimIO CLI<p>
+<p align="center">
+<img src="https://i.imgur.com/t18LDhm.gif">
+</p>
 
 ## Requirements
 - [Node.js](https://nodejs.org/en/) v10 or higher
@@ -37,6 +42,8 @@ async function main() {
 main().catch(console.error);
 ```
 
+> 👀 the reference to the history array is keeped. So if you want to achieve a while of input, think to declare a top array history that will be used by all inputs.
+
 ## API
 
 ### stdin(query: null | string, options?: Options): Promise< string >
@@ -48,6 +55,8 @@ interface Options {
     autocomplete?: string[];
 }
 ```
+
+history and autocomplete are optional. There is no thing as a cache or limitation for history (you have to implement that kind of stuff yourself with [cacache](https://www.npmjs.com/package/cacache)).
 
 ## Dependencies
 
