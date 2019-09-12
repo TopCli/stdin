@@ -29,17 +29,15 @@ $ yarn add @slimio/stdin
 ```js
 const stdin = require("@slimio/stdin");
 
-async function main() {
-    const result = await stdin("Question title > ", {
-        history: ["command in history 1", "command in history 2"],
-        autocomplete: [
-            "events",
-            "events.get_info"
-        ]
-    });
-    console.log(result);
-}
-main().catch(console.error);
+stdin("Question title > ", {
+    history: ["command in history 1", "command in history 2"],
+    autocomplete: [
+        "events",
+        "events.get_info"
+    ]
+})
+.then((data) => console.log(`input data: ${data}`))
+.catch(console.error);
 ```
 
 > 👀 the reference to the history array is keeped. So if you want to achieve a while of input, think to declare a top array history that will be used by all inputs.
