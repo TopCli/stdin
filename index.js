@@ -131,8 +131,8 @@ async function stdin(query = "question", options = {}) {
                 process.stdout.moveCursor(-1, 0);
                 currentCursorPosition--;
             }
-            else if (key.name === "right") {
-                if (currentCursorPosition < rawStr.length) {
+            else if (key.name === "right" || key.name === "tab") {
+                if (currentCursorPosition < rawStr.length && key.name !== "tab") {
                     process.stdout.moveCursor(1, 0);
                     currentCursorPosition++;
 
@@ -172,7 +172,9 @@ async function stdin(query = "question", options = {}) {
                 process.stdout.clearLine(1);
                 process.stdout.write(rawStr);
 
+                currentCursorPosition = rawStr.length;
                 currentHistoryIndex = nextIndex;
+
                 if (isOriginalStr && rawStrCopy.trim() !== "") {
                     history.push(rawStrCopy);
                     isOriginalStr = false;
