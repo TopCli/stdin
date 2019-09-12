@@ -198,6 +198,8 @@ async function stdin(query = "question", options = {}) {
                     process.stdout.clearLine(1);
                     process.stdout.write(rawStr);
                     currentCursorPosition = rawStr.length;
+
+                    searchForCompletion(void 0);
                 }
                 else {
                     const nLen = strLength(rawStrCopy) - currentCursorPosition;
