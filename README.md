@@ -4,6 +4,8 @@
 ![MIT](https://img.shields.io/github/license/mashape/apistatus.svg)
 ![dep](https://img.shields.io/david/SlimIO/stdin)
 ![size](https://img.shields.io/github/languages/code-size/SlimIO/stdin)
+![Known Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/@slimio/stdin)
+[![Build Status](https://travis-ci.com/SlimIO/stdin.svg?branch=master)](https://travis-ci.com/SlimIO/stdin)
 
 Node.js light and interactive standard input (stdin) crafted for REPL (like) experience (with auto-completion and history). Under the hood it use `process.stdin` and TTY Stream with the raw mode enabled to catch key by key.
 
