@@ -38,7 +38,7 @@
     },
     "homepage": "https://github.com/SlimIO/stdin#readme",
     "dependencies": {
-        "fast-levenshtein": "^2.0.6",
+        "fast-levenshtein": "^3.0.0",
         "string-length": "^4.0.1"
     },
     "devDependencies": {
