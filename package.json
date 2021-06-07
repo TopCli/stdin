@@ -39,7 +39,7 @@
     "homepage": "https://github.com/SlimIO/stdin#readme",
     "dependencies": {
         "fast-levenshtein": "^2.0.6",
-        "string-length": "^4.0.1"
+        "string-length": "^5.0.0"
     },
     "devDependencies": {
         "@commitlint/cli": "^8.3.5",
