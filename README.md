@@ -1,7 +1,7 @@
 # Stdin
 ![version](https://img.shields.io/badge/dynamic/json.svg?style=for-the-badge&url=https://raw.githubusercontent.com/TopCli/stdin/master/package.json&query=$.version&label=Version)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://github.com/TopCli/stdin/commit-activity)
-[![mit](https://img.shields.io/github/license/Naereen/StrapDown.js.svg?style=for-the-badge)](https://github.com/TopCli/stdin/blob/master/LICENSE)
+[![mit](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/TopCli/stdin/blob/master/LICENSE)
 [![OpenSSF
 Scorecard](https://api.securityscorecards.dev/projects/github.com/TopCli/stdin/badge?style=for-the-badge)](https://api.securityscorecards.dev/projects/github.com/TopCli/stdin)
 ![build](https://img.shields.io/github/actions/workflow/status/TopCli/stdin/node.js.yml?style=for-the-badge)
