@@ -6,9 +6,9 @@
   "exports": "./index.js",
   "scripts": {
     "prepublishOnly": "pkg-ok",
-    "test": "cross-env esm-tape-runner 'test/**/*.js' | tap-monkey",
+    "test": "node --test test/",
     "coverage": "c8 -r html npm test",
-    "lint": "cross-env eslint index.js"
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -43,14 +43,10 @@
     "string-length": "^5.0.1"
   },
   "devDependencies": {
-    "@nodesecure/eslint-config": "^1.6.0",
-    "@small-tech/esm-tape-runner": "^2.0.0",
-    "@small-tech/tap-monkey": "^1.4.0",
-    "c8": "^7.12.0",
-    "cross-env": "^7.0.2",
-    "eslint": "^8.32.0",
-    "pkg-ok": "^3.0.0",
-    "tape": "^5.6.3"
+    "@nodesecure/eslint-config": "^1.7.0",
+    "c8": "^7.13.0",
+    "eslint": "^8.39.0",
+    "pkg-ok": "^3.0.0"
   },
   "engines": {
     "node": ">=14"
