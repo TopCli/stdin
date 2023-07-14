@@ -40,7 +40,7 @@
   "homepage": "https://github.com/TopCli/stdin#readme",
   "dependencies": {
     "fast-levenshtein": "^3.0.0",
-    "string-length": "^5.0.1"
+    "string-length": "^6.0.0"
   },
   "devDependencies": {
     "@nodesecure/eslint-config": "^1.7.0",
