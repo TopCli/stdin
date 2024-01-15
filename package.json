@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@nodesecure/eslint-config": "^1.7.0",
-    "c8": "^8.0.0",
+    "c8": "^9.1.0",
     "eslint": "^8.39.0",
     "pkg-ok": "^3.0.0"
   },
