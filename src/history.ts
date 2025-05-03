@@ -1,21 +1,18 @@
-
 export class History {
-  #commands = [];
+  #commands: string[] = [];
   #index = 0;
 
-  /**
-   * @param {!string[]} commands
-   */
-  constructor(commands) {
-    if (!Array.isArray(commands)) {
-      throw new TypeError("commands must be an Array");
-    }
-
+  constructor(
+    commands: string[] = []
+  ) {
     this.#commands = commands;
     this.#index = this.#commands.length;
   }
 
-  push(command, noDuplicateCheck = false) {
+  push(
+    command: string,
+    noDuplicateCheck = false
+  ) {
     if (noDuplicateCheck || !this.#commands.includes(command)) {
       this.#commands.push(command);
     }

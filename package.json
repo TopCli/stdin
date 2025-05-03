@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "Node.js light standard input (stdin) crafted for REPL experience",
   "type": "module",
-  "exports": "./index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "prepublishOnly": "pkg-ok",
-    "test": "node --test test/**/*.test.js",
+    "build": "tsc",
+    "prepublishOnly": "npm run build && pkg-ok",
+    "test": "tsx --test test/**/*.test.ts",
     "coverage": "c8 -r html npm test",
-    "lint": "eslint ."
+    "lint": "eslint src test"
   },
   "repository": {
     "type": "git",
@@ -30,22 +32,24 @@
   "author": "GENTILHOMME Thomas <gentilhomme.thomas@gmail.com>",
   "license": "MIT",
   "files": [
-    "index.js",
-    "index.d.ts",
-    "src"
+    "dist"
   ],
   "bugs": {
     "url": "https://github.com/TopCli/stdin/issues"
   },
   "homepage": "https://github.com/TopCli/stdin#readme",
   "dependencies": {
-    "fast-levenshtein": "^3.0.0",
-    "string-length": "^6.0.0"
+    "fast-levenshtein": "^3.0.0"
   },
   "devDependencies": {
     "@openally/config.eslint": "^2.1.0",
+    "@openally/config.typescript": "^1.0.3",
+    "@types/fast-levenshtein": "^0.0.4",
+    "@types/node": "^22.15.3",
     "c8": "^10.1.3",
-    "pkg-ok": "^3.0.0"
+    "pkg-ok": "^3.0.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=22"

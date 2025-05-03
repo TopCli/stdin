@@ -3,7 +3,7 @@ import { describe, test } from "node:test";
 import assert from "node:assert";
 
 // Import Internal Dependencies
-import { localMatchOf } from "../src/utils.js";
+import { localMatchOf } from "../src/utils/index.js";
 
 describe("localMatchOf", () => {
   const arr = ["hello world", "hello everyone", "foo bar", "baz qux", "hello", "foobar"];

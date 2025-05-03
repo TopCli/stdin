@@ -1,14 +1,11 @@
 // Import Third-party Dependencies
 import levenshtein from "fast-levenshtein";
 
-/**
- * @function localMatchOf
- * @param {!Array<string>} arr
- * @param {!string} str
- * @param {boolean} [forceNextMatch=false]
- * @returns {string | null}
- */
-export function localMatchOf(arr, str, forceNextMatch = false) {
+export function localMatchOf(
+  arr: string[],
+  str: string,
+  forceNextMatch = false
+): string | null {
   let isFirstMatch = true;
 
   for (const value of arr) {
