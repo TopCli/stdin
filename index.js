@@ -1,11 +1,12 @@
 // Import Node.js Dependencies
-import { emitKeypressEvents } from "readline";
+import { emitKeypressEvents } from "node:readline";
 
 // Import Third-party Dependencies
 import strLength from "string-length";
 
 // Import Internal Dependencies
 import { localMatchOf } from "./src/utils.js";
+import { History } from "./src/history.js";
 
 /**
  * @async
@@ -25,9 +26,7 @@ export default async function stdin(query = "question", options = {}) {
   }
 
   const { history = [], autocomplete = [] } = options;
-  if (!Array.isArray(history)) {
-    throw new TypeError("history must be an Array Object");
-  }
+  const histo = new History(history);
 
   emitKeypressEvents(process.stdin);
   if (!process.stdin.isTTY) {
@@ -46,26 +45,21 @@ export default async function stdin(query = "question", options = {}) {
   return new Promise((resolve) => {
     let rawStr = "";
     let currentCursorPosition = 0;
-    let currentHistoryIndex = history.length;
     let isOriginalStr = true;
-    let autoCompletionActivated = false;
-    let autoCompletionStr = "";
-    let realCompletionStr = "";
+    let completionHint = "";
+    let completionHintStripped = "";
 
-    // eslint-disable-next-line
     function clearAutoCompletion(forceClean = false) {
-      if (autoCompletionActivated) {
+      if (completionHint.length > 0) {
         process.stdout.clearLine(1);
 
-        autoCompletionActivated = false;
-        autoCompletionStr = "";
+        completionHint = "";
       }
       else if (forceClean) {
         process.stdout.clearLine(1);
       }
     }
 
-    // eslint-disable-next-line
     function searchForCompletion(str, forceNextMatch = false) {
       if (noRefComplete.length === 0) {
         return true;
@@ -74,11 +68,10 @@ export default async function stdin(query = "question", options = {}) {
 
       clearAutoCompletion();
       if (localMatch !== null && localMatch !== "") {
-        realCompletionStr = localMatch;
-        autoCompletionStr = `\x1b[90m${localMatch}\x1b[39m`;
-        autoCompletionActivated = true;
-        process.stdout.write(typeof str === "undefined" ? autoCompletionStr : `${str}${autoCompletionStr}`);
-        process.stdout.moveCursor(-strLength(autoCompletionStr), 0);
+        completionHintStripped = localMatch;
+        completionHint = `\x1b[90m${localMatch}\x1b[39m`;
+        process.stdout.write(typeof str === "undefined" ? completionHint : `${str}${completionHint}`);
+        process.stdout.moveCursor(-strLength(completionHint), 0);
 
         return false;
       }
@@ -93,18 +86,12 @@ export default async function stdin(query = "question", options = {}) {
         process.stdin.pause();
         process.stdout.write("\n");
         process.stdin.removeListener("keypress", listener);
-        const uniqueHistorySet = new Set(history);
 
         const trimedRawStr = rawStr.trim();
-        const result = trimedRawStr === "" ? null : trimedRawStr;
-
-        if (result !== null) {
-          uniqueHistorySet.add(rawStr);
+        if (trimedRawStr !== "") {
+          histo.push(trimedRawStr);
         }
-        history.splice(0, history.length);
-        history.push(...uniqueHistorySet);
-
-        resolve(result);
+        resolve(trimedRawStr);
       }
       else if (key.name === "left") {
         if (currentCursorPosition <= 0) {
@@ -122,45 +109,45 @@ export default async function stdin(query = "question", options = {}) {
           return;
         }
 
-        if (!autoCompletionActivated) {
+        if (completionHint.length === 0) {
           return;
         }
 
         clearAutoCompletion();
-        process.stdout.write(realCompletionStr);
-        rawStr += realCompletionStr;
-        currentCursorPosition += realCompletionStr.length;
-        realCompletionStr = "";
+        process.stdout.write(completionHintStripped);
+        rawStr += completionHintStripped;
+        currentCursorPosition += completionHintStripped.length;
+        completionHintStripped = "";
         searchForCompletion(void 0, true);
       }
       else if (key.name === "up" || key.name === "down") {
-        const moveIndexValue = key.name === "up" ? -1 : 1;
-        const nextIndex = currentHistoryIndex + moveIndexValue;
         const rawStrCopy = rawStr;
 
-        if (history.length === 0) {
+        if (histo.length === 0) {
           if (isOriginalStr && rawStrCopy.trim() !== "") {
-            history.push(rawStrCopy);
+            histo.push(rawStrCopy);
+
             isOriginalStr = false;
           }
 
           return;
         }
-        if (nextIndex < 0 || nextIndex >= history.length) {
+
+        const hasSwitchedHistory = key.name === "up" ? histo.up() : histo.down();
+        if (!hasSwitchedHistory) {
           return;
         }
 
         clearAutoCompletion();
-        rawStr = history[nextIndex];
+        rawStr = histo.current;
         process.stdout.moveCursor(-rawStrCopy.length, 0);
         process.stdout.clearLine(1);
         process.stdout.write(rawStr);
 
         currentCursorPosition = rawStr.length;
-        currentHistoryIndex = nextIndex;
 
         if (isOriginalStr && rawStrCopy.trim() !== "") {
-          history.push(rawStrCopy);
+          histo.push(rawStrCopy);
           isOriginalStr = false;
         }
       }

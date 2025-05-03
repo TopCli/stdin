@@ -14,7 +14,7 @@ Node.js light and interactive standard input (stdin) crafted for REPL (like) exp
 </p>
 
 ## Requirements
-- [Node.js](https://nodejs.org/en/) v14 or higher
+- [Node.js](https://nodejs.org/en/) v22 or higher
 
 ## Getting Started
 
