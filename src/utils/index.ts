@@ -1,2 +1,2 @@
 export * from "./localMatchOf.js";
-export * from "./strLength.js";
+export * from "./stringLength.js";

@@ -12,10 +12,17 @@ export class History {
   push(
     command: string,
     noDuplicateCheck = false
-  ) {
-    if (noDuplicateCheck || !this.#commands.includes(command)) {
-      this.#commands.push(command);
+  ): string {
+    const trimmedCommand = command.trim();
+
+    if (
+      trimmedCommand !== "" &&
+      (noDuplicateCheck || !this.#commands.includes(trimmedCommand))
+    ) {
+      this.#commands.push(trimmedCommand);
     }
+
+    return trimmedCommand;
   }
 
   get current() {

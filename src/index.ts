@@ -2,10 +2,10 @@
 import { emitKeypressEvents } from "node:readline";
 
 // Import Internal Dependencies
-import { History } from "./history.js";
+import { History } from "./class/History.class.js";
+import { Completion } from "./class/Completion.class.js";
 import {
-  localMatchOf,
-  strLength
+  stringLength
 } from "./utils/index.js";
 
 type Key = {
@@ -25,11 +25,6 @@ export default async function stdin(
   query: string | null,
   options: StdinOptions = {}
 ): Promise<string> {
-  const autocomplete = (
-    options?.autocomplete ?? []
-  ).slice(0);
-  const histo = new History(options.history);
-
   emitKeypressEvents(process.stdin);
   if (!process.stdin.isTTY) {
     throw new Error("Current stdin must be a TTY");
@@ -37,99 +32,74 @@ export default async function stdin(
 
   process.stdin.setRawMode(true);
   process.stdin.resume();
-  if (typeof query === "string") {
-    process.stdout.write(query);
-  }
+  typeof query === "string" && process.stdout.write(query);
 
   const { resolve, promise } = Promise.withResolvers<string>();
 
-  let rawStr = "";
-  let currentCursorPosition = 0;
-  let isOriginalStr = true;
-  let completionHint = "";
-  let completionHintStripped = "";
-
-  function clearAutoCompletion(forceClean = false) {
-    if (completionHint.length > 0) {
-      process.stdout.clearLine(1);
-
-      completionHint = "";
-    }
-    else if (forceClean) {
-      process.stdout.clearLine(1);
-    }
-  }
-
-  function searchForCompletion(str, forceNextMatch = false) {
-    if (autocomplete.length === 0) {
-      return true;
-    }
-    const localMatch = localMatchOf(autocomplete, rawStr, forceNextMatch);
-
-    clearAutoCompletion();
-    if (localMatch !== null && localMatch !== "") {
-      completionHintStripped = localMatch;
-      completionHint = `\x1b[90m${localMatch}\x1b[39m`;
-      process.stdout.write(
-        typeof str === "undefined" ? completionHint : `${str}${completionHint}`
-      );
-      process.stdout.moveCursor(
-        -strLength(completionHint),
-        0
-      );
-
-      return false;
-    }
-
-    return true;
-  }
-
-  const listener = (str: string, key: Key) => {
-    if (str === "\u0003" || key.name === "return" || key.name === "escape") {
+  const listener = keyPressListener(
+    new History(options.history),
+    new Completion(
+      process.stdout,
+      options?.autocomplete ?? []
+    ),
+    (result) => {
       process.stdin.setRawMode(false);
       process.stdin.pause();
       process.stdout.write("\n");
       process.stdin.removeListener("keypress", listener);
 
-      const trimedRawStr = rawStr.trim();
-      if (trimedRawStr !== "") {
-        histo.push(trimedRawStr);
-      }
-      resolve(trimedRawStr);
+      resolve(result);
+    }
+  );
+  process.stdin.on("keypress", listener);
+
+  return promise;
+}
+
+function keyPressListener(
+  history: History,
+  completion: Completion,
+  completeCb: (result: string) => void
+) {
+  let rawStr = "";
+  let cursorPos = 0;
+  let isOriginalStr = true;
+
+  return (str: string, key: Key) => {
+    if (key.ctrl || key.name === "return" || key.name === "escape") {
+      completeCb(history.push(rawStr));
     }
     else if (key.name === "left") {
-      if (currentCursorPosition <= 0) {
-        return;
+      if (cursorPos > 0) {
+        process.stdout.moveCursor(-1, 0);
+        cursorPos--;
       }
-
-      process.stdout.moveCursor(-1, 0);
-      currentCursorPosition--;
     }
     else if (key.name === "right" || key.name === "tab") {
-      if (currentCursorPosition < rawStr.length && key.name !== "tab") {
+      if (cursorPos < rawStr.length && key.name !== "tab") {
         process.stdout.moveCursor(1, 0);
-        currentCursorPosition++;
+        cursorPos++;
 
         return;
       }
 
-      if (completionHint.length === 0) {
+      if (completion.hint.length === 0) {
         return;
       }
 
-      clearAutoCompletion();
+      const completionHintStripped = completion.hint.strip();
+
       process.stdout.write(completionHintStripped);
       rawStr += completionHintStripped;
-      currentCursorPosition += completionHintStripped.length;
-      completionHintStripped = "";
-      searchForCompletion(void 0, true);
+      cursorPos += completionHintStripped.length;
+      completion.lookFor(rawStr, void 0, true);
     }
     else if (key.name === "up" || key.name === "down") {
       const rawStrCopy = rawStr;
 
-      if (histo.length === 0) {
+      if (history.length === 0) {
         if (isOriginalStr && rawStrCopy.trim() !== "") {
-          histo.push(rawStrCopy);
+          history.push(rawStrCopy);
 
           isOriginalStr = false;
         }
@@ -137,73 +107,69 @@ export default async function stdin(
         return;
       }
 
-      const hasSwitchedHistory = key.name === "up" ? histo.up() : histo.down();
+      const hasSwitchedHistory = key.name === "up" ? history.up() : history.down();
       if (!hasSwitchedHistory) {
         return;
       }
 
-      clearAutoCompletion();
-      rawStr = histo.current;
+      completion.clear();
+      rawStr = history.current;
       process.stdout.moveCursor(-rawStrCopy.length, 0);
       process.stdout.clearLine(1);
       process.stdout.write(rawStr);
 
-      currentCursorPosition = rawStr.length;
+      cursorPos = rawStr.length;
 
       if (isOriginalStr && rawStrCopy.trim() !== "") {
-        histo.push(rawStrCopy);
+        history.push(rawStrCopy);
         isOriginalStr = false;
       }
     }
     else if (key.name === "backspace") {
-      const rawStrCopy = rawStr;
-      if (currentCursorPosition === rawStr.length) {
-        clearAutoCompletion();
+      if (cursorPos === rawStr.length) {
+        const rawStrCopy = rawStr;
+        completion.clear();
+
         rawStr = rawStr.slice(0, rawStrCopy.length - 1);
         process.stdout.moveCursor(-rawStrCopy.length, 0);
         process.stdout.clearLine(1);
         process.stdout.write(rawStr);
-        currentCursorPosition = rawStr.length;
+        cursorPos = rawStr.length;
 
-        searchForCompletion(void 0);
+        completion.lookFor(rawStr);
       }
       else {
-        const nLen = strLength(rawStrCopy) - currentCursorPosition;
+        const nLen = stringLength(rawStr) - cursorPos;
         process.stdout.moveCursor(-1, 0);
-        clearAutoCompletion(true);
-        const restStr = rawStrCopy.slice(currentCursorPosition);
+        completion.clear(true);
+        const restStr = rawStr.slice(cursorPos);
         process.stdout.write(restStr);
         process.stdout.moveCursor(-nLen, 0);
 
-        currentCursorPosition--;
-        rawStr = `${rawStrCopy.slice(0, currentCursorPosition)}${restStr}`;
+        cursorPos--;
+        rawStr = `${rawStr.slice(0, cursorPos)}${restStr}`;
       }
     }
     else {
-      if (currentCursorPosition === rawStr.length) {
+      if (cursorPos === rawStr.length) {
         rawStr += str;
-        currentCursorPosition++;
+        cursorPos++;
       }
       else {
         const rawStrCopy = rawStr;
-        rawStr = `${rawStr.slice(0, currentCursorPosition)}${str}${rawStr.slice(currentCursorPosition)}`;
-        const restStr = rawStrCopy.slice(currentCursorPosition);
+        rawStr = `${rawStr.slice(0, cursorPos)}${str}${rawStr.slice(cursorPos)}`;
+        const restStr = rawStrCopy.slice(cursorPos);
 
         process.stdout.write(`${str}${restStr}`);
-        currentCursorPosition++;
+        cursorPos++;
         process.stdout.moveCursor(-restStr.length, 0);
 
         return;
       }
 
-      const writeToStdout = searchForCompletion(str);
-      if (writeToStdout) {
+      if (completion.lookFor(rawStr, str)) {
         process.stdout.write(str);
       }
     }
-  };
-
-  process.stdin.on("keypress", listener);
-
-  return promise;
+  }
 }
