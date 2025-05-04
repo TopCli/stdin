@@ -2,11 +2,26 @@ export class History {
   #commands: string[] = [];
   #index = 0;
 
+  private isOriginal = true;
+
   constructor(
     commands: string[] = []
   ) {
     this.#commands = commands;
     this.#index = this.#commands.length;
+  }
+
+  keep(
+    command: string
+  ) {
+    if (this.isOriginal) {
+      this.push(command);
+      this.isOriginal = false;
+
+      return true;
+    }
+
+    return false;
   }
 
   push(

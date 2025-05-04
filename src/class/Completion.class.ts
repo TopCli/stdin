@@ -21,7 +21,7 @@ export class Completion {
     this.choices = choices.slice(0);
   }
 
-  clear(
+  clearHint(
     force = false
   ) {
     if (this.hint.length > 0) {
@@ -33,22 +33,21 @@ export class Completion {
     }
   }
 
-  lookFor(
-    rawStr: string,
-    str?: string,
+  findHint(
+    rawInput: string,
+    currentInput?: string,
     forceNextMatch = false
   ) {
     if (this.choices.length === 0) {
       return true;
     }
-    const localMatch = localMatchOf(this.choices, rawStr, forceNextMatch);
+    const localMatch = localMatchOf(this.choices, rawInput, forceNextMatch);
 
-    this.clear();
-    if (localMatch !== null && localMatch !== "") {
+    this.clearHint();
+    if (localMatch) {
       this.hint.setValue(localMatch);
-
       this.output.write(
-        this.hint.prefix(str)
+        this.hint.prefix(currentInput)
       );
       this.output.moveCursor(
         -this.hint.length,

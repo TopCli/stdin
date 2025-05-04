@@ -44,13 +44,13 @@ console.log(`input data: ${data}`);
 
 ## API
 
-### stdin(query: null | string, options?: StdinOptions): Promise< string >
+### stdin(title: null | string, options?: StdinOptions): Promise< string >
 Query paramaters can be set to `null` to disable the title. Options is described by the following TypeScript interface:
 
 ```ts
 interface StdinOptions {
-    history?: string[];
-    autocomplete?: string[];
+  history?: string[];
+  autocomplete?: string[];
 }
 ```
 

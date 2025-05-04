@@ -2,21 +2,23 @@
 import levenshtein from "fast-levenshtein";
 
 export function localMatchOf(
-  arr: string[],
-  str: string,
+  choices: string[],
+  input: string,
   forceNextMatch = false
 ): string | null {
   let isFirstMatch = true;
 
-  for (const value of arr) {
-    const currCost = levenshtein.get(str, value.slice(0, str.length));
+  for (const value of choices) {
+    const currCost = levenshtein.get(input, value.slice(0, input.length));
     if (currCost === 0) {
       if (forceNextMatch && isFirstMatch) {
         isFirstMatch = false;
         continue;
       }
 
-      return value.slice(str.length);
+      const match = value.slice(input.length);
+
+      return match === "" ? null : match;
     }
   }
 
