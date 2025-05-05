@@ -26,7 +26,7 @@ export class Cursor {
 
   right() {
     if (this.position < this.offset) {
-      process.stdout.moveCursor(1, 0);
+      this.output.moveCursor(1, 0);
       this.position++;
 
       return true;

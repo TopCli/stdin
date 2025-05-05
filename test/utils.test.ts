@@ -1,9 +1,13 @@
 // Import Node.js Dependencies
 import { describe, test } from "node:test";
+import { styleText } from "node:util";
 import assert from "node:assert";
 
 // Import Internal Dependencies
-import { localMatchOf } from "../src/utils/index.js";
+import {
+  localMatchOf,
+  stringLength
+} from "../src/utils/index.js";
 
 describe("localMatchOf", () => {
   const arr = ["hello world", "hello everyone", "foo bar", "baz qux", "hello", "foobar"];
@@ -26,5 +30,21 @@ describe("localMatchOf", () => {
 
   test("returns second match when forceNextMatch is true", () => {
     assert.equal(localMatchOf(arr, "hello", true), " everyone");
+  });
+});
+
+describe("stringLength", () => {
+  test("should detect length of emojis", () => {
+    assert.equal(
+      stringLength("😍😁"),
+      2
+    );
+  });
+
+  test("should detect length with ANSI codes", () => {
+    assert.equal(
+      stringLength(styleText("blue", "hello")),
+      5
+    );
   });
 });
