@@ -6,7 +6,9 @@
 Scorecard](https://api.securityscorecards.dev/projects/github.com/TopCli/stdin/badge?style=for-the-badge)](https://api.securityscorecards.dev/projects/github.com/TopCli/stdin)
 ![build](https://img.shields.io/github/actions/workflow/status/TopCli/stdin/node.js.yml?style=for-the-badge)
 
-Node.js light and interactive standard input (stdin) crafted for REPL (like) experience (with auto-completion and history). Under the hood it use `process.stdin` and TTY Stream with the raw mode enabled to catch key by key.
+A lightweight and interactive standard input (stdin) utility for Node.js, designed for REPL-like experiences with support for auto-completion and history.
+
+Internally, it leverages `process.stdin` in raw mode to capture key-by-key input directly from the TTY stream.
 
 <p align="center">Demo with the SlimIO CLI<p>
 <p align="center">
@@ -40,21 +42,32 @@ const data = await stdin("Question title > ", {
 console.log(`input data: ${data}`);
 ```
 
-> 👀 the reference to the history array is keeped. So if you want to achieve a while of input, think to declare a top array history that will be used by all inputs.
+> [!TIP]
+> 💡 The history array is passed by reference. If you plan to run multiple prompts in a loop, define a shared history array outside the loop to persist input history across calls.
 
 ## API
 
 ### stdin(title: null | string, options?: StdinOptions): Promise< string >
-Query paramaters can be set to `null` to disable the title. Options is described by the following TypeScript interface:
+
+Prompts the user for input with an optional title and options. If **title** is `null`, the prompt will be displayed without a prefix.
+
+`StdinOptions` interface
 
 ```ts
 interface StdinOptions {
+  /**
+   * An array of previous commands or inputs to enable navigation with arrow keys.
+   */
   history?: string[];
+  /**
+   * A list of strings used to suggest autocompletion while typing.
+   */
   autocomplete?: string[];
 }
 ```
 
-history and autocomplete are optional. There is no thing as a cache or limitation for history (you have to implement that kind of stuff yourself with [cacache](https://www.npmjs.com/package/cacache)).
+> [!CAUTION]
+> This module does not implement history persistence or caching. If you want to persist history across sessions, consider using a package like [cacache](https://github.com/npm/cacache#readme).
 
 ## Contributors ✨
 
