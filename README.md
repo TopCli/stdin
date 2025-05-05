@@ -43,7 +43,7 @@ console.log(`input data: ${data}`);
 ```
 
 > [!TIP]
-> 💡 The history array is passed by reference. If you plan to run multiple prompts in a loop, define a shared history array outside the loop to persist input history across calls.
+> The history array is passed by reference. If you plan to run multiple prompts in a loop, define a shared history array outside the loop to persist input history across calls.
 
 ## API
 

@@ -5,9 +5,6 @@ import { emitKeypressEvents } from "node:readline";
 import { History } from "./class/History.class.js";
 import { InputBuffer } from "./class/InputBuffer.class.js";
 import { Completion } from "./class/Completion.class.js";
-import {
-  stringLength
-} from "./utils/index.js";
 
 type Key = {
   sequence?: string;
@@ -64,42 +61,45 @@ function keyPressListener(
   autocompletion: Completion,
   completeCallback: (result: string) => void
 ) {
-  const ib = new InputBuffer(process.stdout);
+  const inputBuffer = new InputBuffer(process.stdout);
 
   return (input: string, key: Key) => {
-    ib.cursor.offset = ib.toString().length;
+    inputBuffer.cursor.offset = inputBuffer.toString().length;
 
     switch (normalizeKey(key)) {
       case "ctrl+c":
       case "return":
       case "escape":
         completeCallback(
-          history.push(ib.toString())
+          history.push(inputBuffer.toString())
         );
         break;
       case "left": {
-        ib.cursor.left();
+        inputBuffer.cursor.left();
         break;
       }
       case "right":
       case "tab": {
         if (
-          (key.name !== "tab" && ib.cursor.right()) ||
+          (key.name !== "tab" && inputBuffer.cursor.right()) ||
           autocompletion.hint.length === 0
         ) {
           break;
         }
 
-        ib.append(
+        inputBuffer.append(
           autocompletion.hint.strip()
         );
-        autocompletion.findHint(ib.toString(), void 0, true);
+        autocompletion.findHint(
+          inputBuffer.toString(),
+          { forceNextMatch: true }
+        );
         break;
       }
       case "up":
       case "down": {
         if (history.length === 0) {
-          history.keep(ib.toString());
+          history.keep(inputBuffer.toString());
           break;
         }
         if (
@@ -110,43 +110,25 @@ function keyPressListener(
 
         autocompletion.clearHint();
         history.keep(
-          ib.replace(history.current, { clearOutput: true })
+          inputBuffer.replace(history.current, { clearOutput: true })
         );
         break;
       }
       case "backspace": {
-        const currentText = ib.toString();
-        if (ib.cursorIsAtEnd()) {
-          autocompletion.clearHint();
-          ib.clear();
+        autocompletion.clearHint();
+        const { autocomplete } = inputBuffer.removeChar();
 
-          autocompletion.findHint(
-            ib.replace(currentText.slice(0, -1))
-          );
-        }
-        else if (ib.cursor.position > 0) {
-          const intermediateCursorPos = stringLength(currentText) - ib.cursor.position;
-          const restStr = currentText.slice(ib.cursor.position);
-
-          ib.cursor.left();
-          autocompletion.clearHint(true);
-
-          process.stdout.write(restStr);
-          process.stdout.moveCursor(-intermediateCursorPos, 0);
-
-          ib.replaceValue(
-            `${currentText.slice(0, ib.cursor.position)}${restStr}`,
-            ib.cursor.position
-          );
+        if (autocomplete) {
+          autocompletion.findHint(inputBuffer.toString());
         }
         break;
       }
       default: {
-        const { autocomplete } = ib.appendChar(input);
+        const { autocomplete } = inputBuffer.appendChar(input);
 
         if (
           autocomplete &&
-          autocompletion.findHint(ib.toString(), input)
+          autocompletion.findHint(inputBuffer.toString(), { currentInput: input })
         ) {
           process.stdout.write(input);
         }

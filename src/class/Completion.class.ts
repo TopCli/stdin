@@ -1,11 +1,20 @@
 // Import Node.js Dependencies
 import * as TTY from "node:tty";
+import { stripVTControlCharacters } from "node:util";
 
 // Import Internal Dependencies
-import { Hint } from "./Hint.class.js";
 import {
-  localMatchOf
+  localMatchOf,
+  stringLength
 } from "../utils/index.js";
+
+export interface FindHintOptions {
+  /**
+   * @default false
+   */
+  forceNextMatch?: boolean;
+  currentInput?: string;
+}
 
 export class Completion {
   public hint = new Hint();
@@ -21,23 +30,22 @@ export class Completion {
     this.choices = choices.slice(0);
   }
 
-  clearHint(
-    force = false
-  ) {
+  clearHint() {
     if (this.hint.length > 0) {
       this.output.clearLine(1);
       this.hint.clear();
-    }
-    else if (force) {
-      this.output.clearLine(1);
     }
   }
 
   findHint(
     rawInput: string,
-    currentInput?: string,
-    forceNextMatch = false
+    options: FindHintOptions = {}
   ) {
+    const {
+      forceNextMatch = false,
+      currentInput
+    } = options;
+
     if (this.choices.length === 0) {
       return true;
     }
@@ -58,5 +66,37 @@ export class Completion {
     }
 
     return true;
+  }
+}
+
+export class Hint {
+  value: string = "";
+
+  get length() {
+    return stringLength(this.value);
+  }
+
+  prefix(
+    prefixString: string | undefined
+  ): string {
+    return typeof prefixString === "undefined" ?
+      this.value :
+      `${prefixString}${this.value}`;
+  }
+
+  clear() {
+    this.value = "";
+
+    return this;
+  }
+
+  setValue(value: string) {
+    this.value = `\x1b[90m${value}\x1b[39m`;
+
+    return this;
+  }
+
+  strip(): string {
+    return stripVTControlCharacters(this.value);
   }
 }

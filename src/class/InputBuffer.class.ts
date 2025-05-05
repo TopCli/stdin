@@ -3,6 +3,7 @@ import * as TTY from "node:tty";
 
 // Import Internal Dependencies
 import { Cursor } from "./Cursor.class.js";
+import { stringLength } from "../utils/index.js";
 
 export interface ReplaceOptions {
   clearOutput?: boolean;
@@ -21,13 +22,13 @@ export class InputBuffer {
     this.cursor = new Cursor(this.output);
   }
 
-  clear() {
+  private clear() {
     this.output.moveCursor(this.cursor.offset - this.cursor.position, 0);
     this.output.moveCursor(-this.value.length, 0);
     this.output.clearLine(1);
   }
 
-  cursorIsAtEnd() {
+  private cursorIsAtEnd() {
     return this.cursor.position === this.value.length;
   }
 
@@ -39,7 +40,7 @@ export class InputBuffer {
     return this.appendValue(input);
   }
 
-  appendAtCursor(
+  private appendAtCursor(
     input: string
   ): string {
     const rightSideOfValue = this.value.slice(
@@ -57,7 +58,7 @@ export class InputBuffer {
     return this.value;
   }
 
-  appendValue(
+  private appendValue(
     input: string,
     cursorLength: number = input.length
   ): string {
@@ -95,7 +96,7 @@ export class InputBuffer {
     return this.replaceValue(input);
   }
 
-  replaceValue(
+  private replaceValue(
     input: string,
     cursorLength: number = input.length
   ): string {
@@ -103,6 +104,35 @@ export class InputBuffer {
     this.cursor.position = cursorLength;
 
     return this.value;
+  }
+
+  removeChar(): { autocomplete: boolean; } {
+    if (this.cursorIsAtEnd()) {
+      this.clear();
+      this.replace(this.value.slice(0, -1));
+
+      return { autocomplete: true };
+    }
+    else if (this.cursor.position > 0) {
+      this.removeOneCharAtCursor();
+    }
+
+    return { autocomplete: false };
+  }
+
+  private removeOneCharAtCursor() {
+    const intermediateCursorPos = stringLength(this.value) - this.cursor.position;
+    const restStr = this.value.slice(this.cursor.position);
+
+    this.cursor.left();
+    this.output.clearLine(1);
+    this.output.write(restStr);
+    this.output.moveCursor(-intermediateCursorPos, 0);
+
+    this.replaceValue(
+      `${this.value.slice(0, this.cursor.position)}${restStr}`,
+      this.cursor.position
+    );
   }
 
   toString() {
