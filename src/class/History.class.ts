@@ -1,8 +1,7 @@
 export class History {
   #commands: string[] = [];
   #index = 0;
-
-  private isOriginal = true;
+  #lastEnteredText: string = "";
 
   constructor(
     commands: string[] = []
@@ -14,9 +13,19 @@ export class History {
   keep(
     command: string
   ) {
-    if (this.isOriginal) {
-      this.push(command);
-      this.isOriginal = false;
+    const trimmedCommand = command.trim();
+    if (trimmedCommand === "") {
+      return false;
+    }
+
+    if (this.#index === this.#commands.length) {
+      this.#lastEnteredText = trimmedCommand;
+
+      return false;
+    }
+
+    if (this.#commands[this.#index] !== trimmedCommand) {
+      this.#lastEnteredText = trimmedCommand;
 
       return true;
     }
@@ -42,7 +51,7 @@ export class History {
 
   get current() {
     if (this.#index === this.#commands.length) {
-      return "";
+      return this.#lastEnteredText;
     }
 
     return this.#commands[this.#index];

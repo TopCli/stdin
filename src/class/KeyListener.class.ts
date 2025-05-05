@@ -57,21 +57,15 @@ export class KeyListener {
   private historize(
     direction: "up" | "down"
   ) {
-    if (this.history.length === 0) {
-      this.history.keep(this.inputBuffer.toString());
+    const currentText = this.inputBuffer.toString();
+    this.history.keep(currentText);
 
-      return;
-    }
-    if (
-      !this.history[direction]()
-    ) {
+    if (this.history.length === 0 || !this.history[direction]()) {
       return;
     }
 
     this.autocomplete.clearHint();
-    this.history.keep(
-      this.inputBuffer.replace(this.history.current, { clearOutput: true })
-    );
+    this.inputBuffer.replace(this.history.current, { clearOutput: true });
   }
 
   private backspace() {
