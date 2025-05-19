@@ -2,7 +2,7 @@
   "extends": "@openally/config.typescript",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "./",
+    "rootDir": "./src",
     "lib": ["ES2024"]
   },
   "include": ["src"],
