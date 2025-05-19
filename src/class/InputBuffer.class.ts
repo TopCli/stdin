@@ -32,6 +32,10 @@ export class InputBuffer {
     return this.cursor.position === this.value.length;
   }
 
+  cursorIntermediatePosition() {
+    return stringLength(this.value) - this.cursor.position;
+  }
+
   append(
     input: string
   ): string {
@@ -121,13 +125,13 @@ export class InputBuffer {
   }
 
   private removeOneCharAtCursor() {
-    const intermediateCursorPos = stringLength(this.value) - this.cursor.position;
+    const position = this.cursorIntermediatePosition();
     const restStr = this.value.slice(this.cursor.position);
 
     this.cursor.left();
     this.output.clearLine(1);
     this.output.write(restStr);
-    this.output.moveCursor(-intermediateCursorPos, 0);
+    this.output.moveCursor(-position, 0);
 
     this.replaceValue(
       `${this.value.slice(0, this.cursor.position)}${restStr}`,

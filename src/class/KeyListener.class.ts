@@ -119,7 +119,10 @@ export class KeyListener {
 
           if (
             autocomplete &&
-            this.autocomplete.findHint(this.inputBuffer.toString(), { currentInput: input })
+            this.autocomplete.findHint(
+              this.inputBuffer.toString(),
+              { currentInput: input }
+            )
           ) {
             this.output.write(input);
           }
