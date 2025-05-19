@@ -1,5 +1,5 @@
 // Import Third-party Dependencies
-import levenshtein from "fast-levenshtein";
+import { distance } from "fastest-levenshtein";
 
 export function localMatchOf(
   choices: string[],
@@ -9,7 +9,7 @@ export function localMatchOf(
   let isFirstMatch = true;
 
   for (const value of choices) {
-    const currCost = levenshtein.get(input, value.slice(0, input.length));
+    const currCost = distance(input, value.slice(0, input.length));
     if (currCost === 0) {
       if (forceNextMatch && isFirstMatch) {
         isFirstMatch = false;
