@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/TopCli/stdin#readme",
   "dependencies": {
-    "fastest-levenshtein": "^1.0.16"
+    "fastest-levenshtein": "1.0.16"
   },
   "devDependencies": {
     "@openally/config.eslint": "^2.2.0",
