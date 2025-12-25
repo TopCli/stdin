@@ -5,7 +5,7 @@ import { emitKeypressEvents } from "node:readline";
 import {
   KeyListener,
   type KeyListenerOptions
-} from "./class/KeyListener.class.js";
+} from "./class/KeyListener.class.ts";
 
 export type StdinOptions = KeyListenerOptions;
 

@@ -1,2 +1,2 @@
-export * from "./localMatchOf.js";
-export * from "./stringLength.js";
+export * from "./localMatchOf.ts";
+export * from "./stringLength.ts";

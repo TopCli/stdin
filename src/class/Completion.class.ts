@@ -6,7 +6,7 @@ import { stripVTControlCharacters } from "node:util";
 import {
   localMatchOf,
   stringLength
-} from "../utils/index.js";
+} from "../utils/index.ts";
 
 export interface FindHintOptions {
   /**

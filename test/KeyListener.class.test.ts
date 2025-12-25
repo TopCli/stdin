@@ -4,7 +4,7 @@ import assert from "node:assert";
 import * as TTY from "node:tty";
 
 // Import Internal Dependencies
-import { KeyListener } from "../src/class/KeyListener.class.js";
+import { KeyListener } from "../src/class/KeyListener.class.ts";
 
 type MockTTYWriteStream = {
   write: ReturnType<typeof mock.fn>;
