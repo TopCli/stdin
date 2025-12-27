@@ -2,9 +2,9 @@
 import * as TTY from "node:tty";
 
 // Import Internal Dependencies
-import { History } from "./History.class.js";
-import { Completion } from "./Completion.class.js";
-import { InputBuffer } from "./InputBuffer.class.js";
+import { History } from "./History.class.ts";
+import { Completion } from "./Completion.class.ts";
+import { InputBuffer } from "./InputBuffer.class.ts";
 
 type Key = {
   sequence?: string;

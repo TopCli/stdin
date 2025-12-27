@@ -7,7 +7,7 @@ import assert from "node:assert";
 import {
   localMatchOf,
   stringLength
-} from "../src/utils/index.js";
+} from "../src/utils/index.ts";
 
 describe("localMatchOf", () => {
   const arr = ["hello world", "hello everyone", "foo bar", "baz qux", "hello", "foobar"];

@@ -2,8 +2,8 @@
 import * as TTY from "node:tty";
 
 // Import Internal Dependencies
-import { Cursor } from "./Cursor.class.js";
-import { stringLength } from "../utils/index.js";
+import { Cursor } from "./Cursor.class.ts";
+import { stringLength } from "../utils/index.ts";
 
 export interface ReplaceOptions {
   clearOutput?: boolean;
